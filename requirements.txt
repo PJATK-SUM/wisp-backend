@@ -1,2 +1,4 @@
-picamera
-cognitive_face
+numpy==1.12.1
+picamera==1.13
+cognitive_face==1.2.5
+pyrebase==3.0.27
