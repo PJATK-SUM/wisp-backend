@@ -12,7 +12,7 @@ import pyrebase
 IMAGE_WIDTH = 512
 IMAGE_HEIGHT = 288
 BASE_PATH = os.path.abspath(os.path.dirname(__file__))
-FACE_DETECTOR_PATH = "{base_path}/cascades/haarcascade_frontalface_default.xml".format(
+FACE_DETECTOR_PATH = "{base_path}/cascades/haarcascade_frontalface_alt.xml".format(
         base_path=BASE_PATH)
 
 # Initialize Cognitive Services
