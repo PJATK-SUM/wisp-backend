@@ -2,3 +2,7 @@ numpy==1.12.1
 picamera==1.13
 cognitive_face==1.2.5
 pyrebase==3.0.27
+peewee==2.9.2
+python-ntlm==1.1.0
+pi-rc522==2.2.1
+-e git://github.com:lthiery/SPI-Py.git#egg=SPI-Py
