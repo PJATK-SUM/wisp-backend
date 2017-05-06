@@ -2,12 +2,14 @@ from picamera import PiCamera
 from time import strftime
 from secrets import COGNITIVE_SERVICES_KEY, PERSON_GROUP_ID, SCREEN_ID, FIREBASE_CONFIG
 from threading import Thread
+from logging import handlers
 
 import cv2
 import numpy as np
 import os
 import cognitive_face as CF
 import pyrebase
+import logging
 
 # Setup some constants
 IMAGE_WIDTH = 512
@@ -23,6 +25,7 @@ class Detector(Thread):
         Thread.__init__(self)
 
         self.stop_event = stop_event
+        self.__setup_logging()
 
         # Initialize Cognitive Services
         CF.Key.set(COGNITIVE_SERVICES_KEY)
@@ -45,32 +48,35 @@ class Detector(Thread):
         self.last_center_x = None
         self.last_center_y = None
 
+    def __setup_logging(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+
+        logfile = "{base_path}/logs/detector.log".format(base_path=BASE_PATH)
+        handler = handlers.RotatingFileHandler(logfile, maxBytes=1000000, backupCount=5)
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        handler.setFormatter(formatter)
+
+        self.logger.addHandler(handler)
+
     def run(self):
         # Warmup the camera
         self.stop_event.wait(2)
 
         while(not self.stop_event.is_set()):
-            print("Attempting face detection")
             self.detect()
             self.process()
-
-            print("Finishing loop run")
             self.stop_event.wait(1)
 
     def detect(self):
         self.camera.capture(self.image_buffer, 'rgb')
         self.captured_image = self.image_buffer.reshape((IMAGE_HEIGHT, IMAGE_WIDTH, 3))
         self.captured_image = cv2.cvtColor(self.captured_image, cv2.COLOR_BGR2GRAY)
-
-        print("Running face classifier")
         self.detections = self.face_cascade.detectMultiScale(self.captured_image, scaleFactor=1.5, minNeighbors=5,
             minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
 
     def process(self):
-        print("Processing results")
-
         if self.no_detections():
-            print("No faces detected")
             self.clear_last_center()
             self.clear_person()
             return
@@ -78,10 +84,10 @@ class Detector(Thread):
         x, y, width, height = self.detections[0]
 
         if self.is_previous_face(x, y, width, height):
-            print("Face already detected")
+            self.logger.info("Face already detected")
             return
 
-        print("Possible new face - attempting identification")
+        self.logger.info("Possible new face - attempting identification")
 
         self.set_identifying(True)
         self.identify()
@@ -125,15 +131,15 @@ class Detector(Thread):
             base_path=BASE_PATH, imagename=strftime("%c"))
         cv2.imwrite(impath, cropped)
 
-        print("Using CF to obtain a faceId")
+        self.logger.info("Using CF to obtain a faceId")
         detections = CF.face.detect(impath)
 
         if len(detections) == 0:
-            print("CF didn't detect a face")
+            self.logger.info("CF didn't detect a face")
             self.clear_person()
             return
 
-        print("Attemtping to identify face")
+        self.logger.info("Attemtping to identify face")
         faceId = detections[0]["faceId"]
         faces = CF.face.identify([faceId], PERSON_GROUP_ID)
 
@@ -143,9 +149,9 @@ class Detector(Thread):
         candidates = faces[0]["candidates"]
 
         if len(candidates) == 0:
-            print("CF couldn't identify the face")
+            self.logger.info("CF couldn't identify the face")
             self.clear_person()
 
-        print("Recognized person, writing to Firebase")
+        self.logger.info("Recognized person, writing to Firebase")
         person_id = candidates[0]["personId"]
         self.set_person(person_id)
