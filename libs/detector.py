@@ -20,6 +20,8 @@ FACE_DETECTOR_PATH = "{base_path}/cascades/haarcascade_frontalface_alt.xml".form
 
 class Detector(Thread):
     def __init__(self, stop_event):
+        Thread.__init__(self)
+
         self.stop_event = stop_event
 
         # Initialize Cognitive Services
@@ -61,7 +63,7 @@ class Detector(Thread):
         self.captured_image = cv2.cvtColor(self.captured_image, cv2.COLOR_BGR2GRAY)
 
         print("Running face classifier")
-        self.detections = face_cascade.detectMultiScale(self.captured_image, scaleFactor=1.5, minNeighbors=5,
+        self.detections = self.face_cascade.detectMultiScale(self.captured_image, scaleFactor=1.5, minNeighbors=5,
             minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
 
     def process(self):
