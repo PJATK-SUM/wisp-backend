@@ -2,8 +2,9 @@
 
 import urllib2
 import json
-import logging
+import libs.logger
 from datetime import date, datetime
+from secrets import SCHEDULE_API_LOGIN, SCHEDULE_API_PASSWORD, SCHEDULE_API_URL
 try:
     from ntlm import HTTPNtlmAuthHandler
 except ImportError:
@@ -13,26 +14,14 @@ except ImportError:
 
 
 class Schedule:
-    SCHAPI_URL = "http://api.knopers.com.pl/test/data2.json?mid=%d"
-
     def __init__(self):
-        self.logger = logging.getLogger('Mirror.Schedule')
-        hdlr = logging.FileHandler('schedule.log')
-        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-        hdlr.setFormatter(formatter)
-        self.logger.addHandler(hdlr)
-        self.logger.setLevel(logging.WARNING)
-        pass
-
-    def setCredentials(self, login, password):
-        self.login = login
-        self.password = password
+        self.logger = libs.logger.get_logger(__name__)
 
     def requestSchedule(self, mid):
-        url = Schedule.SCHAPI_URL % mid
+        url = SCHEDULE_API_URL % mid
 
         passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passman.add_password(None, url, self.login, self.password)
+        passman.add_password(None, url, SCHEDULE_API_LOGIN, SCHEDULE_API_PASSWORD)
         # create the NTLM authentication handler
         authNTLM = HTTPNtlmAuthHandler.HTTPNtlmAuthHandler(passman)
 

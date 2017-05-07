@@ -7,3 +7,6 @@ FIREBASE_CONFIG = {
     "databaseURL": "",
     "storageBucket": ""
 }
+SCHEDULE_API_LOGIN=""
+SCHEDULE_API_PASSWORD=""
+SCHEDULE_API_URL=""
