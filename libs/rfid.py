@@ -2,32 +2,32 @@
 
 import struct
 import time
+import libs.logger
 from pirc522 import RFID
+from secrets import SCREEN_ID, FIREBASE_CONFIG
+from threading import Thread
 
-class Rfid():
-    def __init__(self):
-        self.isRunning = True
-        self.rdr = RFID()  # initialize rfid reader
+class Rfid(Thread):
+    def __init__(self, stop_event):
+        Thread.__init__(self)
 
-    def scan(self, callback):
-        if __debug__:
-            print("Starting")
-        while self.isRunning:
+        firebase = pyrebase.initialize_app(FIREBASE_CONFIG)
+        self.db = firebase.database()
+        self.stop_event = stop_event
+        self.logger = libs.logger.get_logger(__name__)
+        self.rdr = RFID()
+
+    def run(self):
+        self.logger.info("Starting RFID scanner")
+        while(not self.stop_event.is_set()):
             (error, data) = self.rdr.request()
-
-            #if not error and __debug__:
-            #   print("\nDetected: " + format(data, "02x"))
-
             (error, uid) = self.rdr.anticoll()
             if not error:
                 mifareUID = Rfid.mifareDataToInt(uid)
-                callback(mifareUID)
-                if __debug__:
-                    print("Mifare: %d" % (mifareUID))
-            time.sleep(1)
-
-    def close(self):
-        self.isRunning = False
+                self.db.child("screens").child(SCREEN_ID).child("mifare").set(mifareUID)
+                self.db.child("screens").child(SCREEN_ID).child("identification").set("mifare")
+                self.logger.info("Mifare: %d" % (mifareUID))
+            self.stop_event.wait(1)
         self.rdr.cleanup()
 
     @staticmethod

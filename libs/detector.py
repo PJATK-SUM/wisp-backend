@@ -2,14 +2,13 @@ from picamera import PiCamera
 from time import strftime
 from secrets import COGNITIVE_SERVICES_KEY, PERSON_GROUP_ID, SCREEN_ID, FIREBASE_CONFIG
 from threading import Thread
-from logging import handlers
 
 import cv2
 import numpy as np
 import os
 import cognitive_face as CF
 import pyrebase
-import logging
+import libs.logger
 
 # Setup some constants
 IMAGE_WIDTH = 512
@@ -25,7 +24,7 @@ class Detector(Thread):
         Thread.__init__(self)
 
         self.stop_event = stop_event
-        self.__setup_logging()
+        self.logger = libs.logger.get_logger(__name__)
 
         # Initialize Cognitive Services
         CF.Key.set(COGNITIVE_SERVICES_KEY)
@@ -47,17 +46,6 @@ class Detector(Thread):
         self.detections = []
         self.last_center_x = None
         self.last_center_y = None
-
-    def __setup_logging(self):
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-
-        logfile = "{base_path}/logs/detector.log".format(base_path=BASE_PATH)
-        handler = handlers.RotatingFileHandler(logfile, maxBytes=1000000, backupCount=5)
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        handler.setFormatter(formatter)
-
-        self.logger.addHandler(handler)
 
     def run(self):
         # Warmup the camera
@@ -98,9 +86,11 @@ class Detector(Thread):
 
     def clear_person(self):
         self.db.child("screens").child(SCREEN_ID).child("personId").remove()
+        self.db.child("screens").child(SCREEN_ID).child("identification").remove()
 
     def set_person(self, person_id):
         self.db.child("screens").child(SCREEN_ID).child("personId").set(person_id)
+        self.db.child("screens").child(SCREEN_ID).child("identification").set("personId")
 
     def clear_last_center(self):
         self.last_center_x = None
