@@ -1,5 +1,6 @@
 # Contributed by Mateusz Knop (https://github.com/Persiasty)
 
+import pyrebase
 import struct
 import time
 import libs.logger
@@ -21,12 +22,13 @@ class Rfid(Thread):
         self.logger.info("Starting RFID scanner")
         while(not self.stop_event.is_set()):
             (error, data) = self.rdr.request()
-            (error, uid) = self.rdr.anticoll()
             if not error:
-                mifareUID = Rfid.mifareDataToInt(uid)
-                self.db.child("screens").child(SCREEN_ID).child("mifare").set(mifareUID)
-                self.db.child("screens").child(SCREEN_ID).child("identification").set("mifare")
-                self.logger.info("Mifare: %d" % (mifareUID))
+                (error, uid) = self.rdr.anticoll()
+                if not error:
+                    mifareUID = Rfid.mifareDataToInt(uid)
+                    self.db.child("screens").child(SCREEN_ID).child("mifare").set(mifareUID)
+                    self.db.child("screens").child(SCREEN_ID).child("identification").set("mifare")
+                    self.logger.info("Mifare: %d" % (mifareUID))
             self.stop_event.wait(1)
         self.rdr.cleanup()
 
