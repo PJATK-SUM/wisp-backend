@@ -20,7 +20,7 @@ class Schedule:
             self.studentSession)
 
     def requestMifare(self, mid):
-        url = secrets.SCHEDULE_API_URL.format(mid)
+        url = secrets.MIFARE_API_URL.format(mid)
         schedule = []
         try:
             response = self.mifareSession.get(url)
