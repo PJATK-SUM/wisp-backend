@@ -76,7 +76,7 @@ class Schedule:
                 schedule = ET.fromstring(response.text)
                 result = []
 
-                prefix = "{http://schemas.datacontract.org/2004/07/WebServiceMirror"
+                prefix = "{http://schemas.datacontract.org/2004/07/WebServiceMirror}"
                 start_tag = "{}DataRoz".format(prefix)
                 end_tag = "{}DataZak".format(prefix)
                 name_tag = "{}Nazwa".format(prefix)
