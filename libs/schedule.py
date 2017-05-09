@@ -76,10 +76,17 @@ class Schedule:
                 schedule = ET.fromstring(response.text)
                 result = []
 
+                prefix = "{http://schemas.datacontract.org/2004/07/WebServiceMirror"
+                start_tag = "{}DataRoz".format(prefix)
+                end_tag = "{}DataZak".format(prefix)
+                name_tag = "{}Nazwa".format(prefix)
+                code_tag = "{}Kod".format(prefix)
+                classroom_tag = "{}NazwaSali".format(prefix)
+
                 for class_node in schedule:
                     class_object = {}
-                    start = class_node.find("DataRoz").text.split(" ")
-                    end = class_node.find("DataZak").text.split(" ")
+                    start = class_node.find(start_tag).text.split(" ")
+                    end = class_node.find(end_tag).text.split(" ")
                     stime = start[1].split(":")
                     etime = end[1].split(":")
 
@@ -87,14 +94,16 @@ class Schedule:
                     class_object["start"] = {'h': int(stime[0]), 'm': int(stime[1])}
                     class_object["end"] = {'h': int(etime[0]), 'm': int(etime[1])}
 
-                    if(class_node.find("Nazwa").text.strip()):
-                        class_object["title"] = class_node.find("Nazwa").text
+                    if(class_node.find(name_tag).text.strip()):
+                        class_object["title"] = class_node.find(name_tag).text
                     else:
-                        class_object["title"] = class_node.find("Kod").text
+                        class_object["title"] = class_node.find(code_tag).text
 
-                    class_object["room"] = class_node.find("NazwaSali").text
+                    class_object["room"] = class_node.find(classroom_tag).text
 
                     result.append(class_object)
+
+                return result
 
             else:
                 self.logger.error("[studentId: {}] HTTP return code {} \n{}".format(studentId, response.status_code, response.text))
