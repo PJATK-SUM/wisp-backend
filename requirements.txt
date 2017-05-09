@@ -5,4 +5,6 @@ pyrebase==3.0.27
 peewee==2.9.2
 python-ntlm==1.1.0
 pi-rc522==1.1.0
+requests==2.13.0
+requests_ntlm==1.0.0
 -e git://github.com/lthiery/SPI-Py.git#egg=SPI-Py
