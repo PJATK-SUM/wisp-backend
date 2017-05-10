@@ -7,4 +7,5 @@ python-ntlm==1.1.0
 pi-rc522==1.1.0
 requests==2.13.0
 requests_ntlm==1.0.0
+websockets==3.3
 -e git://github.com/lthiery/SPI-Py.git#egg=SPI-Py
