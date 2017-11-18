@@ -4,8 +4,9 @@ cognitive_face==1.2.5
 pyrebase==3.0.27
 peewee==2.9.2
 python-ntlm==1.1.0
-pi-rc522==1.1.0
+spidev==3.2
+RPi.GPIO==0.6.3
+pi-rc522==2.2.1
 requests==2.13.0
 requests_ntlm==1.0.0
 websockets==3.3
--e git://github.com/lthiery/SPI-Py.git#egg=SPI-Py
